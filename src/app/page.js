@@ -25,7 +25,7 @@ export default function Home() {
   // const [jobDesc, setJobDesc] = useState('');
   const [job_title, setJobTitle] = useState('');
   const [company_name, setComName] = useState('');
-  const [resumeFile, setResumeFile] = useState(null);
+  const [fileInput, setFile] = useState(null);
   const [coverLetter, setCoverLetter] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -33,28 +33,39 @@ export default function Home() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
     setLoading(true);
     setError(null);
+
     try {
-      // Prepare your request data
-      const requestData = {
-        job_title,
-        company_name,
-      };
+      const formData = new FormData();
+
+      // Append form fields
+      formData.append('job_title', job_title);
+      formData.append('company_name', company_name);
+      
+      // Append the resume file (if exists)
+      if (fileInput) {
+        formData.append('file', fileInput);
+      }
 
       const res = await fetch('https://gen-cover-195813819523.us-west1.run.app/test', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(requestData),
+        body: formData,
       });
+
+      // const res = await fetch('https://gen-cover-195813819523.us-west1.run.app/test', {
+      //   method: 'POST',
+      //   headers: {
+      //     'Content-Type': 'application/json',
+      //   },
+      //   body: JSON.stringify(requestData),
+      // });
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
 
+      console.log(formData);
       const data = await res.json();
       setCoverLetter(data.gen_res);
       console.log('Response data:', data);
@@ -88,15 +99,15 @@ export default function Home() {
           <input type="text" placeholder="Enter the company name" value={company_name} className="block w-full p-2 border rounded"
             onChange={(e) => setComName(e.target.value)}
           />
-          {/* <label className="block text-sm font-medium mb-2">
-            Upload Your Resume:
-          </label>
-          <input
-            type="file"
+
+          {/* Upload Resume */}
+          <label class="text-xl text-slate-900 font-medium mb-2 block">Upload Your Resume:</label>
+          <input type="file"
             accept=".pdf,.doc,.docx"
-            onChange={(e) => setResumeFile(e.target.files[0])}
-            className="block w-full text-sm"
-          /> */}
+            onChange={(e) => setFileInput(e.target.files[0])}
+            class="w-full text-slate-500 font-medium text-sm bg-white border file:cursor-pointer cursor-pointer file:border-0 file:py-3 file:px-4 file:mr-4 file:bg-gray-100 file:hover:bg-gray-200 file:text-slate-500 rounded" />
+          <p class="text-xs text-slate-500">Accepted file formats: PDF, DOC, and DOCX</p>
+
 
           {/* Job Desc */}
           {/* <label className="block text-sm font-medium mb-2 text-xl">Job Description:</label>
