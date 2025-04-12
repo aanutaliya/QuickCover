@@ -25,7 +25,7 @@ export default function Home() {
   // const [jobDesc, setJobDesc] = useState('');
   const [job_title, setJobTitle] = useState('');
   const [company_name, setComName] = useState('');
-  const [fileInput, setFile] = useState(null);
+  const [fileInput, setFileInput] = useState(null);
   const [coverLetter, setCoverLetter] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
