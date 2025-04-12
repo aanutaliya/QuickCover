@@ -48,9 +48,13 @@ export default function Home() {
         formData.append('file', fileInput);
       }
 
+      // Debug here (before fetch)
+      console.log([...formData.entries()]);
+
       const res = await fetch('https://gen-cover-195813819523.us-west1.run.app/test', {
         method: 'POST',
         body: formData,
+
       });
 
       // const res = await fetch('https://gen-cover-195813819523.us-west1.run.app/test', {
@@ -65,7 +69,6 @@ export default function Home() {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
 
-      console.log(formData);
       const data = await res.json();
       setCoverLetter(data.gen_res);
       console.log('Response data:', data);
