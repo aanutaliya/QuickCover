@@ -1,6 +1,25 @@
 'use client';
-
 import { useState } from 'react';
+import { PDFDownloadLink, Document, Page, Text, StyleSheet } from '@react-pdf/renderer';
+//import {CoverLetterPDF} from './components/coverletterPdf';
+import { PDFViewer } from '@react-pdf/renderer';
+
+const CoverLetterPDF = ({ coverLetter }) => {
+  const styles = StyleSheet.create({
+    page: { padding: 40, fontFamily: 'Helvetica' },
+    title: { fontSize: 20, marginBottom: 20, textAlign: 'center' },
+    content: { fontSize: 12, lineHeight: 1.5 }
+  });
+
+  return (
+    <Document>
+      <Page style={styles.page}>
+        {/* <Text style={styles.title}>Cover Letter</Text> */}
+        <Text style={styles.content}>{coverLetter}</Text>
+      </Page>
+    </Document>
+  );
+};
 
 export default function Home() {
   // const [jobDesc, setJobDesc] = useState('');
@@ -10,6 +29,7 @@ export default function Home() {
   const [coverLetter, setCoverLetter] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -36,7 +56,7 @@ export default function Home() {
       }
 
       const data = await res.json();
-      setCoverLetter(data.coverLetter || data.message || 'No content received');
+      setCoverLetter(data.gen_res);
       console.log('Response data:', data);
     } catch (err) {
       setError(err.message);
@@ -59,12 +79,12 @@ export default function Home() {
         
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Job Title */}
-          <label className="block text-sm font-medium mb-2 text-xl">Job Title:</label>
+          <label className="block font-medium mb-2 text-xl">Job Title:</label>
           <input type="text" placeholder="Enter the job title" value={job_title} className="block w-full p-2 border rounded"
             onChange={(e) => setJobTitle(e.target.value)}
           />
           {/* Company Name */}
-          <label className="block text-sm font-medium mb-2 text-xl">Company Name:</label>
+          <label className="block font-medium mb-2 text-xl">Company Name:</label>
           <input type="text" placeholder="Enter the company name" value={company_name} className="block w-full p-2 border rounded"
             onChange={(e) => setComName(e.target.value)}
           />
@@ -100,9 +120,25 @@ export default function Home() {
         {coverLetter && (
           <div className="mt-8 border-t pt-4">
             <h2 className="text-xl font-semibold mb-2">Your Cover Letter:</h2>
-            <pre className="whitespace-pre-wrap bg-gray-100 p-4 rounded">
-              {coverLetter}
-            </pre>
+            <textarea 
+              className="whitespace-pre-wrap bg-gray-100 p-4 rounded w-full h-96 font-['geistsans']"
+              value={coverLetter}
+              onChange={(e) => setCoverLetter(e.target.value)}
+            />
+
+            <PDFDownloadLink
+            document={<CoverLetterPDF coverLetter={coverLetter} />}
+            fileName="cover_letter.pdf"
+            className="block"
+          >
+            {({ loading }) => (
+              <button
+                className={`w-full py-2 px-4 rounded-md text-white font-medium ${loading ? 'bg-green-400' : 'bg-green-600 hover:bg-green-700'} transition-colors`}
+              >
+                {loading ? 'Preparing PDF...' : 'Download as PDF'}
+              </button>
+            )}
+          </PDFDownloadLink>
           </div>
         )}
       </main>
