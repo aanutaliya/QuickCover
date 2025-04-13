@@ -22,7 +22,7 @@ const CoverLetterPDF = ({ coverLetter }) => {
 };
 
 export default function Home() {
-  // const [jobDesc, setJobDesc] = useState('');
+  const [job_description, setJobDesc] = useState('');
   const [job_title, setJobTitle] = useState('');
   const [company_name, setComName] = useState('');
   const [fileInput, setFileInput] = useState(null);
@@ -42,6 +42,7 @@ export default function Home() {
       // Append form fields
       formData.append('job_title', job_title);
       formData.append('company_name', company_name);
+      formData.append('job_description', job_description);
       
       // Append the resume file (if exists)
       if (fileInput) {
@@ -56,14 +57,6 @@ export default function Home() {
         body: formData,
 
       });
-
-      // const res = await fetch('https://gen-cover-195813819523.us-west1.run.app/test', {
-      //   method: 'POST',
-      //   headers: {
-      //     'Content-Type': 'application/json',
-      //   },
-      //   body: JSON.stringify(requestData),
-      // });
 
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
@@ -103,6 +96,16 @@ export default function Home() {
             onChange={(e) => setComName(e.target.value)}
           />
 
+          {/* Job Desc */}
+          <label className="block font-medium mb-2 text-xl">Job Description:</label>
+          <textarea
+            placeholder="Paste the job description here..."
+            value={job_description}
+            onChange={(e) => setJobDesc(e.target.value)}
+            rows={6}
+            className="w-full p-2 border rounded"
+          />
+
           {/* Upload Resume */}
           <label class="text-xl text-slate-900 font-medium mb-2 block">Upload Your Resume:</label>
           <input type="file"
@@ -110,17 +113,6 @@ export default function Home() {
             onChange={(e) => setFileInput(e.target.files[0])}
             class="w-full text-slate-500 font-medium text-sm bg-white border file:cursor-pointer cursor-pointer file:border-0 file:py-3 file:px-4 file:mr-4 file:bg-gray-100 file:hover:bg-gray-200 file:text-slate-500 rounded" />
           <p class="text-xs text-slate-500">Accepted file formats: PDF, DOC, and DOCX</p>
-
-
-          {/* Job Desc */}
-          {/* <label className="block text-sm font-medium mb-2 text-xl">Job Description:</label>
-          <textarea
-            placeholder="Paste the job description here..."
-            value={jobDesc}
-            onChange={(e) => setJobDesc(e.target.value)}
-            rows={6}
-            className="w-full p-2 border rounded"
-          /> */}
 
           <button
             type="submit"
