@@ -1,8 +1,7 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PDFDownloadLink, Document, Page, Text, StyleSheet } from '@react-pdf/renderer';
-//import {CoverLetterPDF} from './components/coverletterPdf';
-import { PDFViewer } from '@react-pdf/renderer';
+import { useRouter } from 'next/navigation';
 
 const CoverLetterPDF = ({ coverLetter }) => {
   const styles = StyleSheet.create({
@@ -14,7 +13,6 @@ const CoverLetterPDF = ({ coverLetter }) => {
   return (
     <Document>
       <Page style={styles.page}>
-        {/* <Text style={styles.title}>Cover Letter</Text> */}
         <Text style={styles.content}>{coverLetter}</Text>
       </Page>
     </Document>
@@ -22,14 +20,32 @@ const CoverLetterPDF = ({ coverLetter }) => {
 };
 
 export default function Home() {
-  const [job_description, setJobDesc] = useState('');
-  const [job_title, setJobTitle] = useState('');
-  const [company_name, setComName] = useState('');
+  const [formData, setFormData] = useState({
+    job_description: '',
+    job_title: '',
+    company_name: ''
+  });
   const [fileInput, setFileInput] = useState(null);
   const [coverLetter, setCoverLetter] = useState('');
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [user, setUser] = useState(null);
+  const router = useRouter();
 
+  useEffect(() => {
+    const storedUser = localStorage.getItem('user');
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  const handleInputChange = (e) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -37,25 +53,18 @@ export default function Home() {
     setError(null);
 
     try {
-      const formData = new FormData();
-
-      // Append form fields
-      formData.append('job_title', job_title);
-      formData.append('company_name', company_name);
-      formData.append('job_description', job_description);
+      const formDataToSend = new FormData();
+      formDataToSend.append('job_title', formData.job_title);
+      formDataToSend.append('company_name', formData.company_name);
+      formDataToSend.append('job_description', formData.job_description);
       
-      // Append the resume file (if exists)
       if (fileInput) {
-        formData.append('file', fileInput);
+        formDataToSend.append('file', fileInput);
       }
-
-      // Debug here (before fetch)
-      console.log([...formData.entries()]);
 
       const res = await fetch('https://gen-cover-195813819523.us-west1.run.app/test', {
         method: 'POST',
-        body: formData,
-
+        body: formDataToSend,
       });
 
       if (!res.ok) {
@@ -64,7 +73,6 @@ export default function Home() {
 
       const data = await res.json();
       setCoverLetter(data.gen_res);
-      console.log('Response data:', data);
     } catch (err) {
       setError(err.message);
       console.error('Fetch error:', err);
@@ -73,51 +81,115 @@ export default function Home() {
     }
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem('user');
+    setUser(null);
+  };
+
   return (
     <div className="flex flex-col min-h-screen bg-white text-gray-800 font-['comfortaa']">
       <header className="bg-zinc-50 text-black w-full py-4 sticky top-0 z-10">
-        <div className="max-w-xl mx-5">
-          <h1 className="text-3xl font-bold text-left">QuickCover</h1>
+        <div className="w-full px-5 flex justify-between items-center">
+          <div className="flex items-center gap-2">
+          <h1 className="text-3xl font-bold">QuickCover</h1>
+          </div>
+          <div className="flex items-center gap-2">
+            {user ? (
+              <>
+                <img 
+                  src={user.picture} 
+                  alt={user.name} 
+                  className="w-8 h-8 rounded-full"
+                />
+                <button 
+                  onClick={handleLogout}
+                  className="bg-blue-950 text-white px-4 py-2 rounded hover:bg-blue-700"
+                >
+                  Sign Out
+                </button>
+              </>
+            ) : (
+              <button 
+                onClick={() => router.push('/auth/login')}
+                className="bg-blue-950 text-white px-4 py-2 rounded hover:bg-blue-700"
+              >
+                Sign In
+              </button>
+            )}
+          </div>
         </div>
       </header>
       
       <main className="flex-grow max-w-xl mx-auto p-4 w-full mt-4">
+
+        {user ? (
+          <h1 className="text-2xl font-bold mb-4">Welcome, {user.name}!</h1>
+        ) : (
+          <h1 className="text-2xl font-bold mb-4">Welcome!</h1>)}
+
         <h1 className="text-2xl font-bold mb-4">Generate Your Cover Letter</h1>
         
+        {error && (
+          <div className="mb-4 p-4 bg-red-100 text-red-700 rounded">
+            {error}
+          </div>
+        )}
+
         <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Job Title */}
-          <label className="block font-medium mb-2 text-xl">Job Title:</label>
-          <input type="text" placeholder="Enter the job title" value={job_title} className="block w-full p-2 border rounded"
-            onChange={(e) => setJobTitle(e.target.value)}
-          />
-          {/* Company Name */}
-          <label className="block font-medium mb-2 text-xl">Company Name:</label>
-          <input type="text" placeholder="Enter the company name" value={company_name} className="block w-full p-2 border rounded"
-            onChange={(e) => setComName(e.target.value)}
-          />
+          <div>
+            <label className="block font-medium mb-2 text-xl">Job Title:</label>
+            <input 
+              type="text" 
+              name="job_title"
+              placeholder="Enter the job title" 
+              value={formData.job_title} 
+              className="block w-full p-2 border rounded"
+              onChange={handleInputChange}
+              required
+            />
+          </div>
 
-          {/* Job Desc */}
-          <label className="block font-medium mb-2 text-xl">Job Description:</label>
-          <textarea
-            placeholder="Paste the job description here..."
-            value={job_description}
-            onChange={(e) => setJobDesc(e.target.value)}
-            rows={6}
-            className="w-full p-2 border rounded"
-          />
+          <div>
+            <label className="block font-medium mb-2 text-xl">Company Name:</label>
+            <input 
+              type="text" 
+              name="company_name"
+              placeholder="Enter the company name" 
+              value={formData.company_name} 
+              className="block w-full p-2 border rounded"
+              onChange={handleInputChange}
+              required
+            />
+          </div>
 
-          {/* Upload Resume */}
-          <label class="text-xl text-slate-900 font-medium mb-2 block">Upload Your Resume:</label>
-          <input type="file"
-            accept=".pdf,.doc,.docx"
-            onChange={(e) => setFileInput(e.target.files[0])}
-            class="w-full text-slate-500 font-medium text-sm bg-white border file:cursor-pointer cursor-pointer file:border-0 file:py-3 file:px-4 file:mr-4 file:bg-gray-100 file:hover:bg-gray-200 file:text-slate-500 rounded" />
-          <p class="text-xs text-slate-500">Accepted file formats: PDF, DOC, and DOCX</p>
+          <div>
+            <label className="block font-medium mb-2 text-xl">Job Description:</label>
+            <textarea
+              name="job_description"
+              placeholder="Paste the job description here..."
+              value={formData.job_description}
+              onChange={handleInputChange}
+              rows={6}
+              className="w-full p-2 border rounded"
+              required
+            />
+          </div>
+
+          <div>
+            <label className="text-xl text-slate-900 font-medium mb-2 block">Upload Your Resume:</label>
+            <input 
+              type="file"
+              accept=".pdf,.doc,.docx"
+              onChange={(e) => setFileInput(e.target.files[0])}
+              className="w-full text-slate-500 font-medium text-sm bg-white border file:cursor-pointer cursor-pointer file:border-0 file:py-3 file:px-4 file:mr-4 file:bg-gray-100 file:hover:bg-gray-200 file:text-slate-500 rounded" 
+            />
+            <p className="text-xs text-slate-500">Accepted file formats: PDF, DOC, and DOCX</p>
+          </div>
 
           <button
             type="submit"
             disabled={loading}
-            className="bg-blue-950 text-white px-4 py-2 rounded hover:bg-blue-700"
+            className="bg-blue-950 text-white px-4 py-2 rounded hover:bg-blue-700 disabled:opacity-50"
           >
             {loading ? 'Generating...' : 'Generate Cover Letter'}
           </button>
@@ -133,26 +205,25 @@ export default function Home() {
             />
 
             <PDFDownloadLink
-            document={<CoverLetterPDF coverLetter={coverLetter} />}
-            fileName="cover_letter.pdf"
-            className="block"
-          >
-            {({ loading }) => (
-              <button
-                className={`w-full py-2 px-4 rounded-md text-white font-medium ${loading ? 'bg-green-400' : 'bg-green-600 hover:bg-green-700'} transition-colors`}
-              >
-                {loading ? 'Preparing PDF...' : 'Download as PDF'}
-              </button>
-            )}
-          </PDFDownloadLink>
+              document={<CoverLetterPDF coverLetter={coverLetter} />}
+              fileName="cover_letter.pdf"
+              className="block mt-4"
+            >
+              {({ loading }) => (
+                <button
+                  className={`w-full py-2 px-4 rounded-md text-white font-medium ${loading ? 'bg-green-400' : 'bg-green-600 hover:bg-green-700'} transition-colors`}
+                >
+                  {loading ? 'Preparing PDF...' : 'Download as PDF'}
+                </button>
+              )}
+            </PDFDownloadLink>
           </div>
         )}
       </main>
       
       <footer className="bg-gray-800 text-white text-center py-4 w-full">
         <p className="text-sm">
-          &copy; {new Date().getFullYear()} Cover Letter Generator. All rights
-          reserved.
+          &copy; {new Date().getFullYear()} Cover Letter Generator. All rights reserved.
         </p>
       </footer>
     </div>

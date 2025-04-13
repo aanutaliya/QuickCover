@@ -1,5 +1,8 @@
 import { Comfortaa, Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { GoogleOAuthProvider } from '@react-oauth/google';
+
+const CLIENT_ID = "969688947962-2qq6dqndbiuapu8d4voll1ejss7flo35.apps.googleusercontent.com"
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +31,9 @@ export default function RootLayout({ children }) {
       <body
         className={`${geistSans.variable} ${geistMono.variable} ${comfortaa.variable} antialiased`}
       >
+        <GoogleOAuthProvider clientId={CLIENT_ID}>
         {children}
+        </GoogleOAuthProvider>
       </body>
     </html>
   );
