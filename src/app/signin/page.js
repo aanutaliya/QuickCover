@@ -140,7 +140,7 @@ import { useGoogleLogin } from "@react-oauth/google";
                   </button>
   
                   <p className="text-center text-base font-medium text-body-color">
-                    Don't you have an account? 
+                      Don&apos;t have an account?
                     <Link href="/signup" className="text-orange-400 font-bold hover:underline">
                       Sign up
                     </Link>
