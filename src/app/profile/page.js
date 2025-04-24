@@ -1,8 +1,9 @@
 "use client";
 import { useState, useEffect } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
 
-export default function Register() {
+function ProfileContent() {
   const router = useRouter();
   const [user, setUser] = useState(null);
   const searchParams = useSearchParams();
@@ -216,5 +217,14 @@ export default function Register() {
       </div>
     </div>
   </section>
+  );
+}
+
+// Main export with Suspense boundary
+export default function Profile() {
+  return (
+    <Suspense fallback={<div>Loading profile...</div>}>
+      <ProfileContent />
+    </Suspense>
   );
 }
