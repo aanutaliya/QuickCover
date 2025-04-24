@@ -92,11 +92,11 @@ function ProfileContent() {
       <div className="-mx-4 flex flex-wrap justify-center">
         <div className="w-full px-4 lg:w-8/12 xl:w-8/12">
           <div
-            className="wow fadeInUp shadow-three dark:bg-gray-dark mb-12 rounded-sm bg-white px-8 py-11 sm:p-[55px] lg:mb-5 lg:px-8 xl:p-[55px]"
+            className="wow fadeInUp shadow-three mb-12 rounded-sm bg-white px-8 py-11 sm:p-[55px] lg:mb-5 lg:px-8 xl:p-[55px]"
             data-wow-delay=".15s
             "
           >
-            <h2 className="mb-3 text-2xl font-bold text-black dark:text-white sm:text-3xl lg:text-2xl xl:text-3xl">
+            <h2 className="mb-3 text-2xl font-bold text-black sm:text-3xl lg:text-2xl xl:text-3xl">
               Complete Your Profile
             </h2>
             <form onSubmit={handleSubmit}>
@@ -106,7 +106,7 @@ function ProfileContent() {
                 {/* Name */}
                 <div className="w-full px-4 md:w-1/2">
                   <div className="mb-8">
-                    <label htmlFor="name" className="mb-3 block text-sm font-medium text-dark dark:text-white">
+                    <label htmlFor="name" className="mb-3 block text-sm font-medium">
                       First Name
                     </label>
                     <input
@@ -115,13 +115,13 @@ function ProfileContent() {
                         value={formData.given_name} 
                         onChange={handleChange} 
                         required 
-                        className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                        className="border-stroke w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none focus:border-primary"
                     />
                   </div>
                 </div>
                 <div className="w-full px-4 md:w-1/2">
                   <div className="mb-8">
-                    <label htmlFor="name" className="mb-3 block text-sm font-medium text-dark dark:text-white">
+                    <label htmlFor="name" className="mb-3 block text-sm font-medium">
                       Last Name
                     </label>
                     <input
@@ -130,7 +130,7 @@ function ProfileContent() {
                         value={formData.family_name} 
                         onChange={handleChange} 
                         required 
-                        className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                        className="border-stroke w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none focus:border-primary"
                     />
                   </div>
                 </div>
@@ -139,7 +139,7 @@ function ProfileContent() {
                   <div className="mb-8">
                     <label
                       htmlFor="email"
-                      className="mb-3 block text-sm font-medium text-dark dark:text-white"
+                      className="mb-3 block text-sm font-medium"
                     >
                       Your Email
                     </label>
@@ -150,7 +150,7 @@ function ProfileContent() {
                         onChange={handleChange} 
                         required 
                         // readOnly 
-                      className="border-stroke dark:text-body-color-dark dark:shadow-two w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                      className="border-stroke w-full rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none focus:border-primary"
                     />
                   </div>
                 </div>
@@ -158,7 +158,7 @@ function ProfileContent() {
                 <div className="w-full px-4">
                   <div className="mb-8">
                     <label
-                      className="mb-3 block text-sm font-medium text-dark dark:text-white"
+                      className="mb-3 block text-sm font-medium"
                     >
                       LinkedIn Profile
                     </label>
@@ -168,7 +168,7 @@ function ProfileContent() {
                         value={formData.linkedin} 
                         onChange={handleChange} 
                         placeholder="https://linkedin.com/in/yourname" 
-                      className="border-stroke dark:text-body-color-dark dark:shadow-two w-full resize-none rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                      className="border-stroke w-full resize-none rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none focus:border-primary"
                     ></input>
                   </div>
                 </div>
@@ -176,7 +176,7 @@ function ProfileContent() {
                 <div className="w-full px-4">
                   <div className="mb-8">
                     <label
-                      className="mb-3 block text-sm font-medium text-dark dark:text-white"
+                      className="mb-3 block text-sm font-medium"
                     >
                       Personal Website
                     </label>
@@ -186,7 +186,7 @@ function ProfileContent() {
                         value={formData.personal_website} 
                         onChange={handleChange} 
                         placeholder="https://yourwebsite.com" 
-                      className="border-stroke dark:text-body-color-dark dark:shadow-two w-full resize-none rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none focus:border-primary dark:border-transparent dark:bg-[#2C303B] dark:focus:border-primary dark:focus:shadow-none"
+                      className="border-stroke w-full resize-none rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none focus:border-primary"
                     ></input>
                   </div>
                 </div>
@@ -203,7 +203,7 @@ function ProfileContent() {
                 </div>
                 </div>
                 <div className="w-full px-4">
-                  <button className="shadow-submit dark:shadow-submit-dark rounded-sm bg-orange-500 px-9 py-4 text-base font-medium text-white duration-300 hover:bg-gray-500">
+                  <button className="shadow-submit rounded-sm bg-orange-500 px-9 py-4 text-base font-medium text-white duration-300 hover:bg-gray-500">
                     Save Changes
                   </button>
                 </div>

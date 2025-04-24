@@ -79,8 +79,8 @@ import { useGoogleLogin } from "@react-oauth/google";
           <div className="container mx-auto px-4">
             <div className="-mx-4 flex flex-wrap">
               <div className="w-full px-4">
-                <div className="shadow-three mx-auto max-w-[500px] rounded bg-white px-6 py-10 dark:bg-dark sm:p-[60px]">
-                  <h3 className="mb-3 text-center text-2xl font-bold text-black dark:text-white sm:text-3xl">
+                <div className="shadow-three mx-auto max-w-[500px] rounded bg-white px-6 py-10 sm:p-[60px]">
+                  <h3 className="mb-3 text-center text-2xl font-bold text-black sm:text-3xl">
                     Create your account
                   </h3>
                   <p className="mb-11 text-center text-base font-medium text-body-color">
@@ -88,7 +88,7 @@ import { useGoogleLogin } from "@react-oauth/google";
                   </p>
                   <button 
                     onClick={signup}
-                    className="border-stroke dark:text-body-color-dark dark:shadow-two mb-6 flex w-full items-center justify-center rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 hover:border-orange-400 hover:bg-primary/5 hover:text-orange-500 dark:border-transparent dark:bg-[#2C303B] dark:hover:border-orange-400 dark:hover:bg-primary/5 dark:hover:text-orange-500 dark:hover:shadow-none">
+                    className="border-stroke mb-6 flex w-full items-center justify-center rounded-sm border bg-[#f8f8f8] px-6 py-3 text-base text-body-color outline-none transition-all duration-300 hover:border-orange-400 hover:bg-primary/5 hover:text-orange-500">
                     <span className="mr-3">
                       <svg
                         width="20"
