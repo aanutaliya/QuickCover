@@ -1,4 +1,6 @@
+"use client"
 import SectionWrapper from "../../SectionWrapper"
+import React from 'react'
 
 const Features = () => {
 

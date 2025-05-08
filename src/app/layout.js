@@ -1,4 +1,6 @@
 "use client";
+import React from "react";
+import { useState } from "react";
 import { Comfortaa, Geist, Geist_Mono } from "next/font/google";
 import "../styles/globals.css";
 import { GoogleOAuthProvider } from '@react-oauth/google';
@@ -28,14 +30,13 @@ const comfortaa = Comfortaa({
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${comfortaa.variable}`}>
       <Head>
         <title>QuickCover</title>
         <meta name='description' content='Skip the blank page stress and generate a job-winning cover letter tailored to any role, instantly.' />
         <meta name='viewport' content='width=device-width, initial-scale=1' />
-        {/* <link rel='icon' href='/favicon.ico' /> */}
       </Head>
-      <body className={`${geistSans.variable} ${geistMono.variable} ${comfortaa.variable} antialiased`}>
+      <body className="antialiased">
         <GoogleOAuthProvider clientId={CLIENT_ID}>
           <Navbar />
           {children}

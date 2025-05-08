@@ -2,29 +2,23 @@
 import Link from "next/link";
 import { useRouter } from 'next/navigation';
 import { useGoogleLogin } from "@react-oauth/google";
-//import { jwtDecode } from 'jwt-decode';
+import { useEffect } from 'react';
 
 
   export default function Signup() {
     const router = useRouter();
 
+    useEffect(() => {
+      // Check if there's temp user data
+      const tempUserData = localStorage.getItem('tempUserData');
+      if (tempUserData) {
+        // pre-fill the form or show the data
+        console.log('Pre-filled user data:', JSON.parse(tempUserData));
+      }
+    }, []);
+
     const handleSuccess = async (credentialResponse) => {
       try {
-        // const user = jwtDecode(credentialResponse.credential);
-        // console.log(user);
-        // // localStorage.setItem('user', JSON.stringify(user));
-        
-        // // Prepare user data for backend
-        // const userData = {
-        //   id: user.sub,
-        //   given_name: user.given_name,
-        //   family_name: user.family_name,
-        //   email: user.email,
-        //   linkedin: "", 
-        //   personal_website: "", 
-        //   resume: null,
-        //   provider: "google"
-        // };
         const resGoogle = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
           headers: {
             Authorization: `Bearer ${credentialResponse.access_token}`,
@@ -54,17 +48,26 @@ import { useGoogleLogin } from "@react-oauth/google";
           },
           body: JSON.stringify(userData),
         });
+
         if (response.ok) {
+          const { user, token } = await response.json();
+          localStorage.setItem('user', JSON.stringify(user));
+          localStorage.setItem('token', token);
+          localStorage.removeItem('tempUserData');
           router.push('/'); 
         } else {
           const errorData = await response.json();
-          console.error('Error:', errorData);
+          console.error('Registration Error:', errorData);
+
+          // user already exists
+          if (errorData.message?.includes("already exists")) {
+            router.push('/signin');
+          }
         }
       }
       catch (error) {
         console.error("Google Sign-In Error:", error);
       }
-      router.push('/');
     };
 
     const signup = useGoogleLogin({

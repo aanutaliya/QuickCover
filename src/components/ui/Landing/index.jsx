@@ -1,5 +1,6 @@
+"use client"
 import NavLink from "../NavLink"
-import CTA from "../CTA"
+import React from 'react'
 
 const Hero = () => (
     <section>
@@ -18,9 +19,9 @@ const Hero = () => (
                         Start building
                     </NavLink> */}
                     <NavLink
-                        href="#cta"
+                        href="/content"
                         className="text-white bg-orange-500 border hover:bg-gray-600 active:bg-gray-900"
-                        onClick={() => {Features.scrollToSection("Features")}}
+                        onClick={() => router.push('/content')}
                     >
                         Start building
                     </NavLink>

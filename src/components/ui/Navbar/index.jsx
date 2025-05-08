@@ -13,7 +13,7 @@ const Navbar = () => {
     const [user, setUser] = useState(null);
 
     const baseNavigation = [
-        { title: "Features", path: "/#features" },
+        { title: "Start Building", path: "/content" },
         // { title: "Testimonials", path: "#testimonials" },
     ];
 
@@ -48,23 +48,29 @@ const Navbar = () => {
         };
     }, [router]);
 
-    // Listen for localStorage changes to update user state
     useEffect(() => {
         const checkUser = () => {
-            const storedUser = localStorage.getItem('user');
-            setUser(storedUser ? JSON.parse(storedUser) : null);
+            try {
+                const storedUser = localStorage.getItem('user');
+                if (storedUser && storedUser !== "undefined") {
+                    setUser(JSON.parse(storedUser));
+                } else {
+                    setUser(null);
+                }
+            } catch (error) {
+                console.error("Failed to parse user data:", error);
+                setUser(null);
+            }
         };
-
-        // Check immediately
+    
         checkUser();
-
-        // Set up storage event listener
+    
         const handleStorageChange = (e) => {
             if (e.key === 'user') {
                 checkUser();
             }
         };
-
+    
         window.addEventListener('storage', handleStorageChange);
         
         return () => {
@@ -76,13 +82,6 @@ const Navbar = () => {
         setState(!state)
         document.body.classList.toggle("overflow-hidden")
     }
-
-    useEffect(() => {
-        const storedUser = localStorage.getItem('user');
-        if (storedUser) {
-        setUser(JSON.parse(storedUser));
-        }
-    }, []);
 
     const handleLogout = () => {
           localStorage.removeItem('user');
@@ -150,7 +149,7 @@ const Navbar = () => {
                                 </>
                                 ) : (
                                 <button 
-                                    onClick={() => router.push('/signin')}
+                                    onClick={() => router.push('/auth')}
                                     className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 active:bg-gray-900 md:inline"
                                 >
                                     Sign In

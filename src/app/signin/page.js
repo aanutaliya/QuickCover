@@ -30,52 +30,45 @@ import { useGoogleLogin } from "@react-oauth/google";
           }),
         });
         const result = await userCheck.json();
-        const userExists = result.message === "True";
+        console.log('User existence check:', result);
+        const userExists = result.exists || result.message === "True" || result.message === "true";
+        console.log('User exists:', userExists);
 
-        if (userExists) {
-        // Existing user - fetch user data
-        // const loginResponse = await fetch('https://quick-cover-user-195813819523.us-west1.run.app/fetch_user', {
-        //   method: 'POST',
-        //   headers: {
-        //     'Content-Type': 'application/json',
-        //   },
-        //   body: JSON.stringify({
-        //     id: googleUser.sub,
-        //     email: googleUser.email
-        //   }),
-        // });
-
-        // if (loginResponse.ok) {
-          //const { user, token } = await loginResponse.json();
-          // localStorage.setItem('user', JSON.stringify(user));
-          // localStorage.setItem('token', token);
+        // check existing user
+        if(!userExists) {
+          // New user - redirect to registration with Google data
           const userData = {
             id: googleUser.sub,
             given_name: googleUser.given_name,
             family_name: googleUser.family_name,
             email: googleUser.email,
-            linkedin: "",
-            personal_website: "",
-            resume: null,
             provider: "google"
           };
-  
-          localStorage.setItem('user', JSON.stringify(userData));
-          router.push('/'); // Redirect to home page
-        //}
-      } else {
-        // New user - redirect to registration with Google data
-        router.push({
-          pathname: '/register',
-          query: {
-            id: googleUser.sub,
-            email: googleUser.email,
-            given_name: googleUser.given_name,
-            family_name: googleUser.family_name,
-            picture: googleUser.picture
+          localStorage.setItem('tempUserData', JSON.stringify(userData));
+          router.push('/signup');
+          return;
+        } else {
+          // Existing user - fetch user data
+          const loginResponse = await fetch('https://quick-cover-user-195813819523.us-west1.run.app/fetch_user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              id: googleUser.sub,
+              email: googleUser.email
+            }),
+          });
+
+          if (loginResponse.ok) {
+            const { user, token } = await loginResponse.json();
+            localStorage.setItem('user', JSON.stringify(user));
+            localStorage.setItem('token', token);
+            router.push('/'); 
+          } else {
+            console.error('Failed to fetch user data');
           }
-        });
-      }
+        }
       } catch (error) {
         console.error("Error during signin:", error);
       }

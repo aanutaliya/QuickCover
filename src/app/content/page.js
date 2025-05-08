@@ -1,29 +1,10 @@
 'use client';
-import React from 'react';
 import { useEffect, useState } from 'react';
-import { PDFDownloadLink, Document, Page, Text, StyleSheet } from '@react-pdf/renderer';
 import { useRouter } from 'next/navigation';
-import SectionWrapper from "../../SectionWrapper"
-import NavLink from "../NavLink"
-import Image from "next/image"
+import SectionWrapper from "../../components/SectionWrapper"
+import PDFDownloader from '@/components/ui/PDFDownloader';
 
-const CoverLetterPDF = ({ coverLetter }) => {
-  const styles = StyleSheet.create({
-    page: { padding: 40, fontFamily: 'Helvetica' },
-    title: { fontSize: 20, marginBottom: 20, textAlign: 'center' },
-    content: { fontSize: 12, lineHeight: 1.5 }
-  });
-
-  return (
-    <Document>
-      <Page style={styles.page}>
-        <Text style={styles.content}>{coverLetter}</Text>
-      </Page>
-    </Document>
-  );
-};
-
-const CTA = () => {
+export default function Content() {
 const [formData, setFormData] = useState({
     job_description: '',
     job_title: '',
@@ -37,12 +18,41 @@ const [formData, setFormData] = useState({
   const router = useRouter();
 
   useEffect(() => {
-    const storedUser = localStorage.getItem('user');
-    if (storedUser) {
-        const parsedUser = JSON.parse(storedUser);
-        console.log("User data from localStorage:", parsedUser);
-        setUser(parsedUser);
-    }
+    const fetchUserData = async () => {
+      try {
+        // 1. First check if we have a token (user might be logged in)
+        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
+        
+        if (token) {
+          // 2. Fetch fresh user data from backend
+          const response = await fetch('https://quick-cover-user-195813819523.us-west1.run.app/fetch_user', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'Authorization': `Bearer ${token}`
+            },
+            body: JSON.stringify({
+              // You might need to send user ID or email if required by your API
+            })
+          });
+
+          if (response.ok) {
+            const { user } = await response.json();
+            setUser(user);
+            // Optionally update localStorage
+            localStorage.setItem('user', JSON.stringify(user));
+          } else {
+            // If fetch fails, clear invalid auth data
+            localStorage.removeItem('token');
+            localStorage.removeItem('user');
+          }
+        }
+      } catch (error) {
+        console.error('Error fetching user data:', error);
+      }
+    };
+
+    fetchUserData();
   }, []);
 
   const handleInputChange = (e) => {
@@ -66,6 +76,10 @@ const [formData, setFormData] = useState({
       
       if (fileInput) {
         formDataToSend.append('file', fileInput);
+      }
+
+      if (user?.id) {
+        formDataToSend.append('id', user.id);
       }
 
       const res = await fetch('https://gen-cover-195813819523.us-west1.run.app/create_resume_user', {
@@ -93,14 +107,14 @@ const [formData, setFormData] = useState({
   };
  
     return (
-        <SectionWrapper id="cta" className="pb-0">
+        <SectionWrapper id="cta" className="pb-0 font-['comfortaa']">
             <div className="custom-screen">
                 <div className="items-start gap-x-12 lg:flex">
                     <div className="flex-1 lg:block">
                     {user ? (
-                        <h1 className="text-2xl font-bold mb-4">Welcome, {user.given_name}!</h1>
+                        <h1 className="text-3xl font-bold mb-4">Welcome back, {user.given_name}!</h1>
                         ) : (
-                        <h1 className="text-2xl font-bold mb-4">Welcome!</h1>)}
+                        <h1 className="text-3xl font-bold mb-4">Welcome!</h1>)}
                         
                         {error && (
                         <div className="mb-4 p-4 bg-red-100 text-orange-500 rounded">
@@ -159,7 +173,7 @@ const [formData, setFormData] = useState({
                         <button
                             type="submit"
                             disabled={loading}
-                            className="bg-orange-500 text-white px-4 py-2 rounded hover:bg-gray-600 disabled:opacity-50"
+                            className="bg-orange-500 text-white px-9 py-4 rounded hover:bg-gray-600 disabled:opacity-50"
                         >
                             {loading ? 'Generating...' : 'Generate Cover Letter'}
                         </button>
@@ -170,46 +184,21 @@ const [formData, setFormData] = useState({
                         Generate Your Cover Letter
                         </h2>
                         <div className='mt-4 bg-gray-100 p-4 rounded w-full h-96 font-["geistsans"]'>
-                        {coverLetter && (
-                                  <div className="mt-8 border-t pt-4">
-                                    <h2 className="text-xl font-semibold mb-2">Your Cover Letter:</h2>
-                                    <textarea 
-                                      className="whitespace-pre-wrap bg-gray-100 p-4 rounded w-full h-96 font-['geistsans']"
-                                      value={coverLetter}
-                                      onChange={(e) => setCoverLetter(e.target.value)}
-                                    />
-                        
-                                    <PDFDownloadLink
-                                      document={<CoverLetterPDF coverLetter={coverLetter} />}
-                                      fileName="cover_letter.pdf"
-                                      className="block mt-4"
-                                    >
-                                      {({ loading }) => (
-                                        <button
-                                          className={`w-full py-2 px-4 rounded-md text-white font-medium font-['comfortaa'] ${loading ? 'bg-orange-400' : 'bg-orange-500 hover:bg-gray-600'} transition-colors`}
-                                        >
-                                          {loading ? 'Preparing PDF...' : 'Download as PDF'}
-                                        </button>
-                                      )}
-                                    </PDFDownloadLink>
-                                  </div>
-                                )}
+                            {typeof window !== 'undefined' && coverLetter && (
+                                  <div>
+                                  <h2 className="text-xl font-semibold mb-2">Your Cover Letter:</h2>
+                                  <textarea 
+                                    className="whitespace-pre-wrap bg-gray-100 p-4 rounded w-full h-80 font-['geistsans']"
+                                    value={coverLetter}
+                                    onChange={(e) => setCoverLetter(e.target.value)}
+                                  />
+                            <PDFDownloader coverLetter={coverLetter} />
+                                    </div>
+                            )}  
                         </div>
-
-                        {/* <p className="mt-3 text-gray-600">
-                            Blinder, a software development company, helps to digitize businesses by focusing on client’s business challenges, needs. We value close transparent cooperation and encourage our clients to participate actively in the project development life cycle.
-                        </p> */}
-                        {/* <NavLink
-                            href="/get-started"
-                            className="inline-block mt-4 font-medium text-sm text-white bg-indigo-600 hover:bg-indigo-700 active:bg-indigo-800"
-                        >
-                            Get started
-                        </NavLink> */}
                     </div>
                 </div>
             </div>
         </SectionWrapper>
     )
 }
-
-export default CTA
