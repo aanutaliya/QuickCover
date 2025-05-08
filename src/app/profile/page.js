@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Suspense } from 'react';
 import SectionWrapper from "../../components/SectionWrapper";
@@ -41,7 +41,7 @@ function ProfileContent() {
             resume: data.resume === 'not found' ? null : data.resume
           };
           
-          console.log('Fetched user data:', completeUserData);
+          //console.log('Fetched user data:', completeUserData);
           setFormData(prev => ({
             ...prev,
             ...completeUserData
@@ -73,7 +73,13 @@ function ProfileContent() {
     } else if (tempUser) {
       try {
         const parsedTempUser = JSON.parse(tempUser);
-        userId = parsedTempUser.id;
+        setFormData(prev => ({
+          ...prev,
+          id: parsedTempUser.id,
+          email: parsedTempUser.email,
+          given_name: parsedTempUser.given_name,
+          family_name: parsedTempUser.family_name,
+        }));
       } catch (error) {
         console.error('Failed to parse temp user data:', error);
       }
@@ -83,15 +89,14 @@ function ProfileContent() {
     }
 
     // Set initial form data with whatever we have
-    setFormData(prev => ({
-      ...prev,
-      id: userId,
-      email: searchParams.get('email') || '',
-      given_name: searchParams.get('given_name') || '',
-      family_name: searchParams.get('family_name') || '',
-    }));
+    // setFormData(prev => ({
+    //   ...prev,
+    //   id: userId,
+    //   email: searchParams.get('email') || '',
+    //   given_name: searchParams.get('given_name') || '',
+    //   family_name: searchParams.get('family_name') || '',
+    // }));
 
-    // If we have a user ID, fetch the complete user data
     if (userId) {
       fetchUserData(userId);
     } else {
@@ -133,8 +138,7 @@ function ProfileContent() {
         
         // After successful update, fetch the latest data
         await fetchUserData(completeUserData.id);
-        
-        //localStorage.setItem('user', JSON.stringify(completeUserData));
+        localStorage.setItem('user', JSON.stringify(formData));
         localStorage.removeItem('tempUser');
         alert('Profile updated successfully!');
       } else {
@@ -190,8 +194,11 @@ function ProfileContent() {
           localStorage.removeItem('user');
           localStorage.removeItem('tempUser');
           router.push("/");
+          router.refresh();
         } else {
           alert("Failed to delete account. Please try again.");
+          console.log("Delete error:", data);
+          console.log(data.message);
         }
       } catch (err) {
         console.error("Delete error:", err);

@@ -18,6 +18,7 @@ const [formData, setFormData] = useState({
   const router = useRouter();
 
   useEffect(() => {
+    router.refresh();
     // Safely get user data from localStorage
     const getUserData = () => {
       try {
@@ -81,10 +82,6 @@ const [formData, setFormData] = useState({
     }
   };
 
-  const handleLogout = () => {
-    localStorage.removeItem('user');
-    setUser(null);
-  };
  
     return (
         <SectionWrapper id="cta" className="pb-0 font-['comfortaa']">

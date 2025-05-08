@@ -51,6 +51,7 @@ export default function AuthPage() {
             console.log('User data stored:', user);
           }
           router.push('/content');
+          router.refresh();
       } else {
         // New user
         const tempUser = {
