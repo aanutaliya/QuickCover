@@ -13,11 +13,14 @@ export default function AuthPage() {
       });
       const googleUser = await userInfo.json();
 
+
+      const formPayload = new FormData();
+      formPayload.append('id', googleUser.sub);
+
       // Check if user exists
       const userCheck = await fetch('https://quick-cover-user-195813819523.us-west1.run.app/user_exist', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: googleUser.sub }),
+        body: formPayload,
       });
       const exists = await userCheck.json();
         console.log('User existence check:', exists.message);
@@ -28,8 +31,7 @@ export default function AuthPage() {
         // Existing user
         const loginRes = await fetch('https://quick-cover-user-195813819523.us-west1.run.app/fetch_user', {
           method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ id: googleUser.sub }),
+          body: formPayload,
         });
         const userData = await loginRes.json();
         // Prepare user object for storage

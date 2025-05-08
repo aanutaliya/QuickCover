@@ -21,101 +21,83 @@ function ProfileContent() {
   const [showConfirmation, setShowConfirmation] = useState(false);
   const [fileInput, setFileInput] = useState(null);
   const [confirmationType, setConfirmationType] = useState(null);
-  
+  const [isLoading, setIsLoading] = useState(true);
 
-
-  useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const storedUser = localStorage.getItem('user');
-      
-      if (storedUser) {
-        try {
-          const parsedUser = JSON.parse(storedUser);
-          setUser(parsedUser);
-          setFormData(prev => ({
-            ...prev,
-            id: parsedUser.id || '',
-            email: parsedUser.email || '',
-            given_name: parsedUser.given_name || '',
-            family_name: parsedUser.family_name || '',
-            linkedin: parsedUser.linkedin || '',
-            personal_website: parsedUser.personal_website || '',
-          }));
-        } catch (error) {
-          console.error('Failed to parse user data:', error);
-        }
-      } else {
-        const tempUser = localStorage.getItem('tempUser');
-        if (tempUser) {
-          try {
-            const parsedTempUser = JSON.parse(tempUser);
-            setFormData(prev => ({
-              ...prev,
-              id: parsedTempUser.id || '',
-              email: parsedTempUser.email || '',
-              given_name: parsedTempUser.given_name || '',
-              family_name: parsedTempUser.family_name || '',
-            }));
-          } catch (error) {
-            console.error('Failed to parse temp user data:', error);
-          }
-        } else {
-          // Fallback to query params if available
-          setFormData({
-            id: searchParams.get('id') || '',
-            email: searchParams.get('email') || '',
-            given_name: searchParams.get('given_name') || '',
-            family_name: searchParams.get('family_name') || '',
-            linkedin: '',
-            personal_website: '',
-            resume: null
-          });
-        }
-      }
-    }
-  }, [searchParams]);
-
-  // Fetch user data once the formData.id is set
-useEffect(() => {
-  const fetchUserData = async () => {
+  const fetchUserData = async (userId) => {
     try {
+      setIsLoading(true);
+      const formPayload = new FormData();
+      formPayload.append('id', userId);
       const response = await fetch('https://quick-cover-user-195813819523.us-west1.run.app/fetch_user', {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ id: formData.id }),
+        body: formPayload,
       });
 
       if (response.ok) {
         const data = await response.json();
-        console.log('Fetched user data:', data);
-        if (data.message === "success") {
+        if (data.message && data.message.includes('User found')) {
+          const completeUserData = {
+            ...data,
+            resume: data.resume === 'not found' ? null : data.resume
+          };
+          
+          console.log('Fetched user data:', completeUserData);
           setFormData(prev => ({
             ...prev,
-            given_name: data.given_name || '',
-            family_name: data.family_name || '',
-            email: data.email || '',
-            linkedin: data.linkedin || '',
-            personal_website: data.personal_website || '',
-            resume: data.resume || null,
+            ...completeUserData
           }));
-
-          // Update localStorage and user state
-          // localStorage.setItem('user', JSON.stringify(data));
-          setUser(data);
+          setUser(completeUserData);
         }
-      } else {
-        console.warn('Failed to fetch user data');
       }
     } catch (error) {
       console.error('Fetch user error:', error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  fetchUserData();
-}, [formData.id]);
+  useEffect(() => {
+    // First try to get user ID from localStorage
+    const storedUser = localStorage.getItem('user');
+    const tempUser = localStorage.getItem('tempUser');
+    let userId = '';
 
+    if (storedUser) {
+      try {
+        const parsedUser = JSON.parse(storedUser);
+        userId = parsedUser.id;
+        setUser(parsedUser);
+      } catch (error) {
+        console.error('Failed to parse user data:', error);
+      }
+    } else if (tempUser) {
+      try {
+        const parsedTempUser = JSON.parse(tempUser);
+        userId = parsedTempUser.id;
+      } catch (error) {
+        console.error('Failed to parse temp user data:', error);
+      }
+    } else {
+      // Fallback to query params if available
+      userId = searchParams.get('id') || '';
+    }
+
+    // Set initial form data with whatever we have
+    setFormData(prev => ({
+      ...prev,
+      id: userId,
+      email: searchParams.get('email') || '',
+      given_name: searchParams.get('given_name') || '',
+      family_name: searchParams.get('family_name') || '',
+    }));
+
+    // If we have a user ID, fetch the complete user data
+    if (userId) {
+      fetchUserData(userId);
+    } else {
+      setIsLoading(false);
+    }
+  }, [searchParams]);
 
   const confirmChanges = async () => {
     setShowConfirmation(false);
@@ -133,7 +115,6 @@ useEffect(() => {
         formPayload.append('resume', fileInput);
       }
 
-      // Determine API endpoint based on whether user exists
       const endpoint = user 
         ? 'https://quick-cover-user-195813819523.us-west1.run.app/update_user'
         : 'https://quick-cover-user-195813819523.us-west1.run.app/add_user';
@@ -145,10 +126,17 @@ useEffect(() => {
 
       if (response.ok) {
         const userData = await response.json();
-        // localStorage.setItem('user', JSON.stringify(userData));
+        const completeUserData = {
+          ...userData,
+          resume: fileInput || formData.resume
+        };
+        
+        // After successful update, fetch the latest data
+        await fetchUserData(completeUserData.id);
+        
+        //localStorage.setItem('user', JSON.stringify(completeUserData));
         localStorage.removeItem('tempUser');
-        setUser(userData);
-        router.push('/');
+        alert('Profile updated successfully!');
       } else {
         const errorData = await response.json();
         console.error('Error:', errorData);
@@ -181,7 +169,6 @@ useEffect(() => {
     setShowConfirmation(true);
   };
   
-  // confirm logic
   const handleConfirm = async () => {
     setIsSubmitting(true);
     setShowConfirmation(false);
@@ -190,15 +177,18 @@ useEffect(() => {
       await confirmChanges();
     } else if (confirmationType === 'delete') {
       try {
+        const formPayload = new FormData();
+        formPayload.append('id', formData.id);
         const res = await fetch("https://quick-cover-user-195813819523.us-west1.run.app/delete_user", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ id: formData.id }),
+          body: formPayload,
         });
   
         const data = await res.json();
-        if (res.ok && data.message === "success") {
-          localStorage.removeItem("user");
+        if (res.ok && data.message.startsWith("Delete successfully")) {
+          alert("Account deleted successfully!");
+          localStorage.removeItem('user');
+          localStorage.removeItem('tempUser');
           router.push("/");
         } else {
           alert("Failed to delete account. Please try again.");
@@ -211,6 +201,21 @@ useEffect(() => {
     }
   };
 
+  if (isLoading) {
+    return (
+      <SectionWrapper className="pb-0 font-['comfortaa']">
+        <div className="custom-screen">
+          <div className="w-full lg:w-8/12 xl:w-8/12">
+            <h2 className="mb-3 text-2xl font-bold text-black sm:text-3xl lg:text-2xl xl:text-3xl">
+              Loading Profile...
+            </h2>
+            <p>Please wait while we load your profile data.</p>
+          </div>
+        </div>
+      </SectionWrapper>
+    );
+  }
+
   return (
     <SectionWrapper className="pb-0 font-['comfortaa']">
       <div className="custom-screen">
@@ -220,9 +225,7 @@ useEffect(() => {
             </h2>
             <form onSubmit={handleUpdate}>
               <div className="-mx-4 flex flex-wrap">
-                {/* Pre-filled fields */}
                 <input type="hidden" name="id" value={formData.id} />
-                {/* Name */}
                 <div className="w-full px-4 md:w-1/2">
                   <div className="mb-8">
                     <label htmlFor="name" className="mb-3 block text-xl font-medium">
@@ -253,7 +256,6 @@ useEffect(() => {
                     />
                   </div>
                 </div>
-                {/* Email */}
                 <div className="w-full px-4 md:w-1/2">
                   <div className="mb-8">
                     <label
@@ -273,7 +275,6 @@ useEffect(() => {
                     />
                   </div>
                 </div>
-                {/* LinkedIn */}
                 <div className="w-full px-4">
                   <div className="mb-8">
                     <label
@@ -291,7 +292,6 @@ useEffect(() => {
                     ></input>
                   </div>
                 </div>
-                {/* Personal Website */}
                 <div className="w-full px-4">
                   <div className="mb-8">
                     <label
@@ -309,7 +309,6 @@ useEffect(() => {
                     ></input>
                   </div>
                 </div>
-                {/* Resume Upload */}
                 <div className="w-full px-4">
                 <div className="mb-8">
                     <label className="text-xl text-slate-900 font-medium mb-2 block">Upload Your Resume:</label>
@@ -322,7 +321,6 @@ useEffect(() => {
                     <p className="text-xs text-slate-500">Accepted file formats: PDF, DOC, and DOCX</p>
                 </div>
                 </div>
-                {/* Confirmation Message */}
                 <div className="w-full px-4">
                 <button 
                       type="submit"
@@ -344,63 +342,39 @@ useEffect(() => {
                       Delete Your Account
                     </button>
                   </p>
-
                 </div>
               </div>
             </form>
           </div>
-  </div>
-  {/* Confirmation Dialog */}
-  {showConfirmation && (
-  <div className="fixed inset-0 bg-current opacity-90 flex items-center justify-center z-50">
-    <div className="bg-white p-6 rounded-lg max-w-md w-full shadow-lg">
-      <h3 className="text-lg font-bold mb-4">
-        {confirmationType === 'delete' ? 'Confirm Deletion' : 'Confirm Changes'}
-      </h3>
-      <p className="mb-6">
-        {confirmationType === 'delete' 
-          ? 'Are you sure you want to permanently delete your account? This action cannot be undone.'
-          : `Are you sure you want to ${user ? 'update' : 'create'} your profile?`}
-      </p>
-      <div className="flex justify-end space-x-4">
-        <button
-          onClick={() => {setShowConfirmation(false);
-            setConfirmationType(null);
-          }}
-          className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={handleConfirm}
-          className={`px-4 py-2 ${
-            confirmationType === 'delete' 
-              ? 'bg-red-500 hover:bg-red-600' 
-              : 'bg-orange-500 hover:bg-orange-600'
-          } text-white rounded`}
-          disabled={isSubmitting}
-        >
-          {isSubmitting ? 'Processing...' : 'Confirm'}
-        </button>
       </div>
-    </div>
-  </div>
-)}
-  {/* {showConfirmation && (
+      {showConfirmation && (
         <div className="fixed inset-0 bg-current opacity-90 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg max-w-md w-full shadow-lg">
-            <h3 className="text-lg font-bold mb-4">Confirm Changes</h3>
-            <p className="mb-6">Are you sure you want to {user ? 'update' : 'create'} your profile?</p>
+            <h3 className="text-lg font-bold mb-4">
+              {confirmationType === 'delete' ? 'Confirm Deletion' : 'Confirm Changes'}
+            </h3>
+            <p className="mb-6">
+              {confirmationType === 'delete' 
+                ? 'Are you sure you want to permanently delete your account? This action cannot be undone.'
+                : `Are you sure you want to ${user ? 'update' : 'create'} your profile?`}
+            </p>
             <div className="flex justify-end space-x-4">
               <button
-                onClick={() => setShowConfirmation(false)}
+                onClick={() => {
+                  setShowConfirmation(false);
+                  setConfirmationType(null);
+                }}
                 className="px-4 py-2 border border-gray-300 rounded hover:bg-gray-100"
               >
                 Cancel
               </button>
               <button
-                onClick={confirmChanges}
-                className="px-4 py-2 bg-orange-500 text-white rounded hover:bg-orange-600"
+                onClick={handleConfirm}
+                className={`px-4 py-2 ${
+                  confirmationType === 'delete' 
+                    ? 'bg-red-500 hover:bg-red-600' 
+                    : 'bg-orange-500 hover:bg-orange-600'
+                } text-white rounded`}
                 disabled={isSubmitting}
               >
                 {isSubmitting ? 'Processing...' : 'Confirm'}
@@ -408,8 +382,8 @@ useEffect(() => {
             </div>
           </div>
         </div>
-      )} */}
-  </SectionWrapper>
+      )}
+    </SectionWrapper>
   );
 }
 
