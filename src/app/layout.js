@@ -28,7 +28,7 @@ const comfortaa = Comfortaa({
 });
 
 
-export default function RootLayout({ children }) {
+export default function RootLayout({ children }) {  
   return (
     <html lang="en" className={`${geistSans.variable} ${geistMono.variable} ${comfortaa.variable}`}>
       <Head>

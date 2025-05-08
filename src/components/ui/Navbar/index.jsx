@@ -14,8 +14,61 @@ const Navbar = () => {
 
     const baseNavigation = [
         { title: "Start Building", path: "/content" },
-        // { title: "Testimonials", path: "#testimonials" },
     ];
+
+//    useEffect(() => {
+//         const storedUser = localStorage.getItem('user');
+//         const parsedUser = setUser(storedUser ? JSON.parse(storedUser) : null);
+//         setUser(parsedUser);
+//         console.log('User data from navbar:', storedUser);
+//     }, [pathname]);
+
+//     useEffect(() => {
+//         const handleStorageChange = (e) => {
+//             if (e.key === 'user') {
+//                 const newUser = e.newValue ? JSON.parse(e.newValue) : null;
+//                 setUser(newUser);
+//                 console.log('Storage event:', newUser); // Debug log
+//             }
+//         };
+
+//         window.addEventListener('storage', handleStorageChange);
+//         return () => window.removeEventListener('storage', handleStorageChange);
+//     }, []);
+
+//     const triggerAuthUpdate = () => {
+//         const storedUser = localStorage.getItem('user');
+//         setUser(storedUser ? JSON.parse(storedUser) : null);
+//     };
+
+    useEffect(() => {
+        const checkUser = () => {
+            try {
+                const storedUser = localStorage.getItem('user');
+                const parsedUser = storedUser && storedUser !== "undefined" 
+                    ? JSON.parse(storedUser) 
+                    : null;
+                setUser(parsedUser);
+            } catch (error) {
+                console.error("Failed to parse user data:", error);
+                setUser(null);
+            }
+        };
+    
+        checkUser();
+    
+        const handleStorageChange = (e) => {
+            if (e.key === 'user') {
+                checkUser();
+            }
+        };
+        
+        window.addEventListener('storage', handleStorageChange);
+        
+        return () => {
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, [pathname]);
 
     const getNavigation = () => {
         const nav = [...baseNavigation];
@@ -36,47 +89,17 @@ const Navbar = () => {
     };
 
     useEffect(() => {
-        // Close the navbar menu when navigate
-        const handleState = () => {
+        const handleRouteChange = () => {
             document.body.classList.remove("overflow-hidden")
             setState(false)
         };
-        router.events?.on("routeChangeStart", handleState); // Optional chaining for safety
+        router.events?.on("routeChangeStart", handleRouteChange);
         
         return () => {
-            router.events?.off("routeChangeStart", handleState);
+            router.events?.off("routeChangeStart", handleRouteChange);
         };
     }, [router]);
 
-    useEffect(() => {
-        const checkUser = () => {
-            try {
-                const storedUser = localStorage.getItem('user');
-                if (storedUser && storedUser !== "undefined") {
-                    setUser(JSON.parse(storedUser));
-                } else {
-                    setUser(null);
-                }
-            } catch (error) {
-                console.error("Failed to parse user data:", error);
-                setUser(null);
-            }
-        };
-    
-        checkUser();
-    
-        const handleStorageChange = (e) => {
-            if (e.key === 'user') {
-                checkUser();
-            }
-        };
-    
-        window.addEventListener('storage', handleStorageChange);
-        
-        return () => {
-            window.removeEventListener('storage', handleStorageChange);
-        };
-    }, []);
 
     const handleNavMenu = () => {
         setState(!state)
@@ -88,6 +111,10 @@ const Navbar = () => {
           setUser(null);
           router.push('/');
         };
+    
+    const handleLogin = () => {
+        router.push('/auth');
+    };   
 
     return (
         <header>
@@ -150,7 +177,7 @@ const Navbar = () => {
                                 </>
                                 ) : (
                                 <button 
-                                    onClick={() => router.push('/auth')}
+                                    onClick={handleLogin}
                                     className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 active:bg-gray-900 md:inline"
                                 >
                                     Sign In

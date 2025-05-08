@@ -5,6 +5,8 @@ import { Suspense } from 'react';
 import SectionWrapper from "../../components/SectionWrapper";
 
 function ProfileContent() {
+
+
   const router = useRouter();
   const [user, setUser] = useState(null);
   const searchParams = useSearchParams();

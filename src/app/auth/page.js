@@ -50,8 +50,9 @@ export default function AuthPage() {
             localStorage.setItem('user', JSON.stringify(user));
             console.log('User data stored:', user);
           }
-          router.push('/content');
           router.refresh();
+          window.dispatchEvent(new Event('storage'));
+          router.push('/content');
       } else {
         // New user
         const tempUser = {
