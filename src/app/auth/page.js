@@ -31,11 +31,24 @@ export default function AuthPage() {
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ id: googleUser.sub }),
         });
-        const { user, token } = await loginRes.json();
-        localStorage.setItem('user', JSON.stringify(user));
-        localStorage.setItem('token', token);
-        console.log('User logged in:', user);
-        router.push('/content');
+        const userData = await loginRes.json();
+        // Prepare user object for storage
+        const user = {
+            id: googleUser.sub,
+            email: userData.email || googleUser.email,
+            given_name: userData.given_name || googleUser.given_name,
+            family_name: userData.family_name || googleUser.family_name,
+            linkedin: userData.linkedin || '',
+            personal_website: userData.personal_website || '',
+            resume: userData.resume || 'not found'
+          };
+  
+          // Store user data
+          if (typeof window !== 'undefined') {
+            localStorage.setItem('user', JSON.stringify(user));
+            console.log('User data stored:', user);
+          }
+          router.push('/content');
       } else {
         // New user
         const tempUser = {
@@ -45,9 +58,12 @@ export default function AuthPage() {
           family_name: googleUser.family_name,
           provider: "google",
         };
-        localStorage.setItem('tempUser', JSON.stringify(tempUser));
-        console.log('New user data stored:', tempUser);
-        router.push('/profile');
+        if (typeof window !== 'undefined') {
+            localStorage.setItem('tempUser', JSON.stringify(tempUser));
+            console.log('Temp user data stored:', tempUser);
+          }
+  
+          router.push('/profile');
       }
     } catch (error) {
       console.error("Auth error:", error);

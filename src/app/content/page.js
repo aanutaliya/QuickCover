@@ -18,41 +18,21 @@ const [formData, setFormData] = useState({
   const router = useRouter();
 
   useEffect(() => {
-    const fetchUserData = async () => {
+    // Safely get user data from localStorage
+    const getUserData = () => {
       try {
-        // 1. First check if we have a token (user might be logged in)
-        const token = typeof window !== 'undefined' ? localStorage.getItem('token') : null;
-        
-        if (token) {
-          // 2. Fetch fresh user data from backend
-          const response = await fetch('https://quick-cover-user-195813819523.us-west1.run.app/fetch_user', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Authorization': `Bearer ${token}`
-            },
-            body: JSON.stringify({
-              // You might need to send user ID or email if required by your API
-            })
-          });
-
-          if (response.ok) {
-            const { user } = await response.json();
-            setUser(user);
-            // Optionally update localStorage
-            localStorage.setItem('user', JSON.stringify(user));
-          } else {
-            // If fetch fails, clear invalid auth data
-            localStorage.removeItem('token');
-            localStorage.removeItem('user');
-          }
+        if (typeof window !== 'undefined') {
+          const userData = localStorage.getItem('user');
+          return userData ? JSON.parse(userData) : null;
         }
+        return null;
       } catch (error) {
-        console.error('Error fetching user data:', error);
+        console.error('Error parsing user data:', error);
+        return null;
       }
     };
 
-    fetchUserData();
+    setUser(getUserData());
   }, []);
 
   const handleInputChange = (e) => {
