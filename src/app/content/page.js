@@ -59,21 +59,31 @@ const [formData, setFormData] = useState({
         formDataToSend.append('file', fileInput);
       }
 
+      // Check if user is logged in
       if (user?.id) {
         formDataToSend.append('id', user.id);
-      }
 
       const res = await fetch('https://gen-cover-195813819523.us-west1.run.app/create_resume_user', {
         method: 'POST',
         body: formDataToSend,
       });
-
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
-
       const data = await res.json();
       setCoverLetter(data.gen_res);
+    } else { 
+      // If user is not logged in, use the public endpoint
+      const res = await fetch('https://gen-cover-195813819523.us-west1.run.app/create_resume_guest', {
+        method: 'POST',
+        body: formDataToSend,
+      });
+      if (!res.ok) {
+        throw new Error(`HTTP error! status: ${res.status}`);
+      }
+      const data = await res.json();
+      setCoverLetter(data.gen_res); 
+    }
     } catch (err) {
       setError(err.message);
       console.error('Fetch error:', err);
