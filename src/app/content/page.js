@@ -138,7 +138,9 @@ const [formData, setFormData] = useState({
                             />
                         </div>
                         <div>
-                            <label className="text-xl text-slate-900 font-medium mb-2 block">Upload Your Resume:</label>
+                            <label className="text-xl text-slate-900 font-medium mb-2 block">
+                                Upload Your Resume:
+                            </label>
                             <input 
                             type="file"
                             accept=".pdf,.doc,.docx"

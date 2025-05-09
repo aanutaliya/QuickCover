@@ -15,32 +15,7 @@ const Navbar = () => {
     const baseNavigation = [
         { title: "Start Building", path: "/content" },
     ];
-
-//    useEffect(() => {
-//         const storedUser = localStorage.getItem('user');
-//         const parsedUser = setUser(storedUser ? JSON.parse(storedUser) : null);
-//         setUser(parsedUser);
-//         console.log('User data from navbar:', storedUser);
-//     }, [pathname]);
-
-//     useEffect(() => {
-//         const handleStorageChange = (e) => {
-//             if (e.key === 'user') {
-//                 const newUser = e.newValue ? JSON.parse(e.newValue) : null;
-//                 setUser(newUser);
-//                 console.log('Storage event:', newUser); // Debug log
-//             }
-//         };
-
-//         window.addEventListener('storage', handleStorageChange);
-//         return () => window.removeEventListener('storage', handleStorageChange);
-//     }, []);
-
-//     const triggerAuthUpdate = () => {
-//         const storedUser = localStorage.getItem('user');
-//         setUser(storedUser ? JSON.parse(storedUser) : null);
-//     };
-
+    
     useEffect(() => {
         const checkUser = () => {
             try {

@@ -17,7 +17,7 @@ function ProfileContent() {
     family_name: '',
     linkedin: '',
     personal_website: '',
-    resume: null
+    resume: 'not found',
   });
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showConfirmation, setShowConfirmation] = useState(false);
@@ -42,8 +42,8 @@ function ProfileContent() {
             ...data,
             resume: data.resume === 'not found' ? null : data.resume
           };
-          
-          //console.log('Fetched user data:', completeUserData);
+
+          console.log('Fetched user data:', completeUserData);
           setFormData(prev => ({
             ...prev,
             ...completeUserData
@@ -91,13 +91,15 @@ function ProfileContent() {
     }
 
     // Set initial form data with whatever we have
-    // setFormData(prev => ({
-    //   ...prev,
-    //   id: userId,
-    //   email: searchParams.get('email') || '',
-    //   given_name: searchParams.get('given_name') || '',
-    //   family_name: searchParams.get('family_name') || '',
-    // }));
+    setFormData(prev => ({
+      ...prev,
+      id: userId,
+      email: searchParams.get('email') || '',
+      given_name: searchParams.get('given_name') || '',
+      family_name: searchParams.get('family_name') || '',
+      linkedin: searchParams.get('linkedin') || '',
+      personal_website: searchParams.get('personal_website') || '',
+    }));
 
     if (userId) {
       fetchUserData(userId);
@@ -133,14 +135,34 @@ function ProfileContent() {
 
       if (response.ok) {
         const userData = await response.json();
-        const completeUserData = {
-          ...userData,
-          resume: fileInput || formData.resume
+        const updatedResume = userData.resume || `found: uploaded on ${new Date().toISOString().split('T')[0]}`;
+      
+        setFormData(prev => ({
+          ...prev,
+          resume: updatedResume
+        }));
+        
+        // Update local storage with new data
+        const updatedUser = {
+          ...formData,
+          resume: updatedResume
         };
+
+      //   const normalizedResume = 
+      //   !data.resume || data.resume === 'not found' 
+      //     ? 'not found' 
+      //     : data.resume.includes('found:') 
+      //       ? data.resume 
+      //       : `found: ${data.resume}`; // Fallback in case format changes
+
+      // const completeUserData = {
+      //   ...data,
+      //   resume: normalizedResume,
+      // };
         
         // After successful update, fetch the latest data
-        await fetchUserData(completeUserData.id);
-        localStorage.setItem('user', JSON.stringify(formData));
+        await fetchUserData(updatedUser.id);
+        localStorage.setItem('user', JSON.stringify(updatedUser));
         localStorage.removeItem('tempUser');
         alert('Profile updated successfully!');
       } else {
@@ -161,7 +183,14 @@ function ProfileContent() {
   };
 
   const handleFileChange = (e) => {
-    setFileInput(e.target.files[0]);
+    const file = e.target.files[0];
+    if (file) {
+      setFileInput(file);
+      setFormData(prev => ({
+        ...prev,
+        resume: `found: selected (${file.name})`
+      }));
+    }
   };
   
   const handleDelete = () => {
@@ -320,7 +349,11 @@ function ProfileContent() {
                 </div>
                 <div className="w-full px-4">
                 <div className="mb-8">
-                    <label className="text-xl text-slate-900 font-medium mb-2 block">Upload Your Resume:</label>
+                    <label className="text-xl text-slate-900 font-medium mb-2 block">
+                    {!formData.resume || formData.resume === "not found" 
+                                ? "Upload Your Resume" 
+                                : `Upload Your Resume: (Last ${formData.resume.split(': ')[1]})`}
+                    </label>
                     <input 
                         type="file"
                         accept=".pdf,.doc,.docx"
